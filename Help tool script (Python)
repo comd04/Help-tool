@@ -1,0 +1,40 @@
+import hou
+
+"Set the path to the location of the $HIP file."
+getPath = hou.text.expandString("$HIP")
+
+
+"If there are some nodes selected, this function will create a python file with all the selected nodes and their parameters."
+def saveNode():
+
+    fullPy = ""
+    
+    for idx, node in enumerate(hou.selectedNodes()):
+        nodeID = "# The node : " + node.name() + "\n# is a : " + node.type().name() + "\n# with the path : " + node.path()  
+        nodeInSTR = str(node.asCode(False, True))
+        nodePy = str(nodeID + "\n\n" + nodeInSTR + "\n\n")    
+        
+        if (idx == len(hou.selectedNodes()) - 1):
+            fullPy = fullPy + nodePy
+            pathFilename = hou.ui.selectFile(start_directory = getPath, pattern = "*.py", title = "Save node as Python", default_value = ".py")
+            nodeFile = open(pathFilename, "w")
+            nodeFile.write(fullPy)
+            nodeFile.close()
+        else:
+            fullPy = fullPy + nodePy
+            
+
+"If there are no nodes selected, this function will open a python file and crerate the nodes."
+def loadNode():
+    pathFilename = hou.ui.selectFile(start_directory = getPath, pattern = "*.py", title = "Load node from Python", default_value = ".py")
+    exec(open(pathFilename).read())
+
+    
+"First function to be executed. Detect if there are some nodes selected and call the appropriate function depending the result."    
+def loadOrSave():
+    if hou.selectedNodes() == ():
+        loadNode()
+    else:
+        saveNode()
+    
+loadOrSave()
